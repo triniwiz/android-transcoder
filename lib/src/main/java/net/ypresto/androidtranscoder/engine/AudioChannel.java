@@ -176,19 +176,21 @@ class AudioChannel {
         final long beginPresentationTimeUs = mOverflowBuffer.presentationTimeUs +
                 sampleCountToDurationUs(overflowBuff.position(), mInputSampleRate, mOutputChannelCount);
 
-        outBuff.clear();
-        // Limit overflowBuff to outBuff's capacity
-        overflowBuff.limit(outBuff.capacity());
-        // Load overflowBuff onto outBuff
-        outBuff.put(overflowBuff);
+                outBuff.clear();
+                if (overflowSize > outBuff.capacity()) {
+                    // Limit overflowBuff to outBuff's capacity
+                    overflowBuff.limit(outBuff.capacity());
+                }
+                // Load overflowBuff onto outBuff
+                outBuff.put(overflowBuff);
 
-        if (overflowSize >= outBuff.capacity()) {
-            // Overflow fully consumed - Reset
-            overflowBuff.clear().limit(0);
-        } else {
-            // Only partially consumed - Keep position & restore previous limit
-            overflowBuff.limit(overflowLimit);
-        }
+                if (overflowSize < outBuff.capacity()) {
+                    // Overflow fully consumed - Reset
+                    overflowBuff.clear().limit(0);
+                } else {
+                    // Only partially consumed - Keep position & restore previous limit
+                    overflowBuff.limit(overflowLimit);
+                }
 
         return beginPresentationTimeUs;
     }
